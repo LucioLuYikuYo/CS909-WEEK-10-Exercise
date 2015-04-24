@@ -1,0 +1,52 @@
+#topic process
+reuters <- read.csv(file="reutersCSV.csv", header=T, sep=",")
+
+#delete the columns that all topics are 0
+delcol <- c(0)
+for(i in 4:138){
+  colsum <- sum(reuters[, i])
+  if(colsum == 0){
+    delcol <- append(delcol, i, after = length(delcol))
+  }
+}
+delcol <- delcol[-1]
+reutersC <- reuters[, -delcol]
+#123 columns left
+
+#delete the rows that all topics are 0
+delrow <- c(0)
+for(i in 1:21578){
+  rowsum <- sum(reutersC[i, 4:121])
+  if(rowsum == 0){
+    delrow <- append(delrow, i, after = length(delrow))
+  }
+}
+delrow <- delrow[-1]
+reutersC <- reutersC[-delrow, ]
+#11340 rows left
+
+blanktextdel <- c(which(reutersC[,123] == ""), which(is.na(reutersC[,123])))
+reutersC <- reutersC[-row.del, ]
+#The reutersC is being pre-processed, it has 10412 obs and 123 variables
+
+write.csv(reutersC, "reutersCleaned.csv", row.names = F)
+
+#Text process
+library(NLP)
+library(tm)
+library(SnowballC)
+#generate bag of text
+#remove stopwords
+#remove punctuation
+#remove numbers
+#convert all text to lowercase
+#remove extra whitespace
+#convert corpus to plain text
+reutersCorpus <- Corpus(VectorSource(reutersC[, 123]))
+reutersCorpus <- tm_map(reutersCorpus,removeWords, stopwords("english"))
+reutersCorpus <- tm_map(reutersCorpus,removePunctuation)      
+reutersCorpus <- tm_map(reutersCorpus,removeNumbers)
+reutersCorpus <- tm_map(reutersCorpus,tolower)
+reutersCorpus <- tm_map(reutersCorpus,stripWhitespace)
+reutersCorpus <- tm_map(reutersCorpus,PlainTextDocument)
+reutersCorpus <- tm_map(reutersCorpus,stemDocument)
