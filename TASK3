@@ -1,0 +1,29 @@
+library(e1071)
+library(randomForest)
+
+reutersC <- read.csv(file="reuterscleaned.csv", header=T, sep=",")
+LDAfeatures <- read.csv(file="LDAfeatures.csv", header=T, sep=",")
+TFIDFfeatures <- read.csv(file="TFIDFfeatures.csv", header=T, sep=",")
+
+#build top 10 topics
+tentopics <- c("topic.earn", "topic.acq", "topic.money.fx", "topic.grain", "topic.crude", "topic.trade", "topic.interest", "topic.ship", "topic.wheat", "topic.corn")
+colnum <- c()
+for(i in 1:10){
+  for(j in 4:121){
+    if(names(reutersC[j]) == tentopics[i])
+      colnum <- c(colnum, j)
+  }
+}
+reutersten <- cbind(reutersC[, c(3, colnum)])
+
+write.csv(reutersten, "reutersTop1oclass.csv", row.names = F)
+
+#3.1 use LDA as features
+reutersLDA <- cbind(reutersten, LDAfeatures)
+
+#add a column to represent topics
+reutersLDA[, "topic"] <- "empty"
+# 1-purpose
+# 2:11-Top 10 topics
+# 12:129-LDA features
+# 130-topic
