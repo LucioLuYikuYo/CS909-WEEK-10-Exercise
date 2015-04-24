@@ -1,0 +1,27 @@
+library(topicmodels)
+
+#LDA features generation
+dtm <- DocumentTermMatrix(reutersCorpus, control = list(wordLengths = c(3, Inf)))
+dtmSP <- removeSparseTerms(dtm, sparse=0.95)
+dtmSPdf <- as.data.frame(inspect(dtmSP))
+
+write.csv(dtmSPdf, "DTMSP.csv", row.names = F)
+
+#LDA model generation
+LDAResult <- LDA(dtmSP, control = list(alpha = 0.1), k = 10, method = "VEM")
+LDAterms <- terms(LDAResult, 20)
+LDATDM <- DocumentTermMatrix(reutersCorpus, control = list(wordLengths = c(3,Inf), dictionary= LDAterms))
+LDAfeatures <- as.data.frame(inspect(LDATDM))
+#10412 obs and 118 var
+
+write.csv(LDAfeatures, "LDAfeatures.csv", row.names = F)
+
+
+
+#to get TF*IDF features
+TFIDF <- weightTfIdf(dtm)
+TFIDFSP <- removeSparseTerms(TFIDF, sparse=0.95)
+TFIDFfeatures <- as.data.frame(inspect(TFIDFSP))
+#10412 obs and 210 var
+
+write.csv(TFIDFfeatures, "TFIDFfeatures.csv", row.names = F)
